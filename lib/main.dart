@@ -1,3 +1,4 @@
+import 'package:date_format/date_format.dart';
 import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -6,7 +7,7 @@ import 'firebase_options.dart';
 import 'auth.dart';
 import 'root_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'stream_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,35 +20,40 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final _db = FirestoreService();
+    _db.getFirestoreData();
+    final initialData = FavoriteDataModel(
+        message: "fetching", name: "fetching", timestamp: 999999);
     final darkTheme = ThemeData.from(
       colorScheme: ColorScheme.dark(primary: Colors.blueGrey),
     );
 
-    return ChangeNotifierProvider(
-      // create: (context) {
-      //   var appState = MyAppState();
-      //   appState.listenFirestore();
-      //   return appState;
-      // },
-      create: ((context) => MyAppState()),
-      child: MaterialApp(
-        title: 'flutter_application_1',
-        theme: ThemeData(
-          useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepOrange),
-        ),
-        darkTheme: darkTheme,
-        // home: MyHomePage(),
-        // home: LoginPage(auth: Auth()),
-        home: RootPage(auth: Auth()),
-      ),
-    );
+    return MultiProvider(
+        providers: [
+          ChangeNotifierProvider(
+            create: ((context) => MyAppState()),
+          ),
+          StreamProvider<List<FavoriteDataModel>>(
+              create: (BuildContext context) => _db.fetchFirestoreData(),
+              initialData: [initialData])
+        ],
+        child: MaterialApp(
+          title: 'flutter_application_1',
+          theme: ThemeData(
+            useMaterial3: true,
+            colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepOrange),
+          ),
+          darkTheme: darkTheme,
+          // home: MyHomePage(),
+          // home: LoginPage(auth: Auth()),
+          home: RootPage(auth: Auth()),
+        ));
   }
 }
 
 class MyAppState extends ChangeNotifier {
   MyAppState() {
-    init();
+    // init();
   }
   var current = WordPair.random();
 
@@ -67,39 +73,26 @@ class MyAppState extends ChangeNotifier {
   }
 
   var firestoreDataList = <String>[];
-  Future<void> init() async {
-    print('init()');
-    FirebaseFirestore.instance
-        .collection('favorite_word')
-        .orderBy('timestamp', descending: true)
-        .snapshots()
-        .listen((snapshot) {
-      print('firestore changed detected!!');
-      print('docs count: ${snapshot.docs.length}');
-      print('docChanges: ${snapshot.docChanges}');
-      final _firestoreDataList = <String>[];
-      for (final document in snapshot.docs) {
-        _firestoreDataList.add(
-          document.data()['text'] as String,
-        );
-      }
-      firestoreDataList = _firestoreDataList;
-      notifyListeners();
-    });
-  }
-
-  Future<DocumentReference> sendToFirestore(String message) {
-    print('sending message to Firestore: $message');
-    print('Current User: ${FirebaseAuth.instance.currentUser!}');
-    return FirebaseFirestore.instance
-        .collection('favorite_word')
-        .add(<String, dynamic>{
-      'text': message,
-      'timestamp': DateTime.now().millisecondsSinceEpoch,
-      'name': FirebaseAuth.instance.currentUser!.displayName,
-      'userId': FirebaseAuth.instance.currentUser!.uid,
-    });
-  }
+  // Future<void> init() async {
+  //   print('init()');
+  //   final Stream<QuerySnapshot> _favoriteWordStream = FirebaseFirestore.instance
+  //       .collection('favorite_word3')
+  //       .orderBy('timestamp', descending: true)
+  //       .snapshots();
+  //   _favoriteWordStream.listen((snapshot) {
+  //     print('firestore changed detected!!');
+  //     print('docs count: ${snapshot.docs.length}'); // 変更後のsnapshotの状態全て
+  //     print('docChanges: ${snapshot.docChanges}'); // 変更のみ検知
+  //     final dataList = <String>[];
+  //     for (final document in snapshot.docs) {
+  //       dataList.add(
+  //         document.data()!['text'] as String,
+  //       );
+  //     }
+  //     firestoreDataList = dataList;
+  //     notifyListeners();
+  //   });
+  // }
 }
 
 class MyHomePage extends StatefulWidget {
@@ -126,6 +119,7 @@ class _MyHomePageState extends State<MyHomePage> {
       default:
         throw UnimplementedError('no widget for $selectedIndex');
     }
+
     return LayoutBuilder(builder: (context, constraints) {
       return Scaffold(
         body: Row(
@@ -167,6 +161,7 @@ class GeneratorPage extends StatelessWidget {
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
     var pair = appState.current;
+    final _db = FirestoreService();
 
     IconData icon;
     if (appState.favorites.contains(pair)) {
@@ -202,7 +197,8 @@ class GeneratorPage extends StatelessWidget {
           children: [
             ElevatedButton(
                 onPressed: () {
-                  appState.sendToFirestore(pair.asLowerCase);
+                  // appState.sendToFirestore(pair.asLowerCase);
+                  _db.sendToFirestore(pair.asLowerCase);
                 },
                 child: Text('Send to Firestore'))
           ],
@@ -269,26 +265,39 @@ class FavoritesPage extends StatelessWidget {
 }
 
 class FirestoreDataPage extends StatelessWidget {
+  const FirestoreDataPage({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
-    var appState = context.watch<MyAppState>();
-    if (appState.firestoreDataList.isEmpty) {
-      return Center(
-        child: Text('No firestoreDataList yet.'),
-      );
-    }
+    // var appState = context.watch<MyAppState>();
+    // if (appState.firestoreDataList.isEmpty) {
+    //   return Center(
+    //     child: Text('No firestoreDataList yet.'),
+    //   );
+    // }
+
+    var favorites = Provider.of<List<FavoriteDataModel>>(context);
 
     return ListView(
       children: [
         Padding(
           padding: const EdgeInsets.all(20),
-          child: Text(
-              'You have ${appState.firestoreDataList.length} firestoreData:'),
+          child: Text('You have ${favorites.length} new messages.'
+              // 'You have ${appState.firestoreDataList.length} firestoreData:'),
+              ),
         ),
-        for (var message in appState.firestoreDataList)
+        // for (var message in appState.firestoreDataList)
+        for (var favorite in favorites)
           ListTile(
             leading: Icon(Icons.filter_drama),
-            title: Text(message),
+            title: Text(favorite.message),
+            trailing: Text(favorite.timestamp != 999999
+                ? formatDate(
+                    // DateTime(favorite.timestamp),
+                    DateTime.fromMillisecondsSinceEpoch(
+                        favorite.timestamp * 1000),
+                    [yyyy, '-', mm, '-', dd])
+                : "0000-00-00"),
           ),
       ],
     );
