@@ -163,7 +163,7 @@ class GeneratorPage extends StatelessWidget {
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
     var pair = appState.current;
-    final _db = FirestoreService();
+    final _firestoreService = FirestoreService();
 
     IconData icon;
     if (appState.favorites.contains(pair)) {
@@ -199,8 +199,7 @@ class GeneratorPage extends StatelessWidget {
           children: [
             ElevatedButton(
                 onPressed: () {
-                  // appState.sendToFirestore(pair.asLowerCase);
-                  _db.sendToFirestore(pair.asLowerCase);
+                  _firestoreService.sendToFirestore(pair.asLowerCase);
                 },
                 child: Text('Send to Firestore'))
           ],
@@ -271,31 +270,21 @@ class FirestoreDataPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // var appState = context.watch<MyAppState>();
-    // if (appState.firestoreDataList.isEmpty) {
-    //   return Center(
-    //     child: Text('No firestoreDataList yet.'),
-    //   );
-    // }
-
+    // Using Provider.of to read stream data
     var favorites = Provider.of<List<FavoriteDataModel>>(context);
-
     return ListView(
       children: [
         Padding(
-          padding: const EdgeInsets.all(20),
-          child: Text('You have ${favorites.length} new messages.'
-              // 'You have ${appState.firestoreDataList.length} firestoreData:'),
-              ),
-        ),
-        // for (var message in appState.firestoreDataList)
+            padding: const EdgeInsets.all(20),
+            child: Text(favorites.first.message == 'fetching'
+                ? 'Currently fetching data... please wait.'
+                : 'You have ${favorites.length} new messages.')),
         for (var favorite in favorites)
           ListTile(
             leading: Icon(Icons.filter_drama),
             title: Text(favorite.message),
             trailing: Text(favorite.timestamp != 999999
                 ? formatDate(
-                    // DateTime(favorite.timestamp),
                     DateTime.fromMillisecondsSinceEpoch(
                         favorite.timestamp * 1000),
                     [yyyy, '-', mm, '-', dd])
@@ -303,5 +292,29 @@ class FirestoreDataPage extends StatelessWidget {
           ),
       ],
     );
+    // Using Consumer to read stream data
+    // return Consumer<List<FavoriteDataModel>>(
+    //     builder: (context, favorites, child) {
+    //   return ListView(
+    //     children: [
+    //       Padding(
+    //           padding: const EdgeInsets.all(20),
+    //           child: Text(favorites.first.message == 'fetching'
+    //               ? 'Currently fetching data... please wait.'
+    //               : 'You have ${favorites.length} new messages.')),
+    //       for (var favorite in favorites)
+    //         ListTile(
+    //           leading: Icon(Icons.filter_drama),
+    //           title: Text(favorite.message),
+    //           trailing: Text(favorite.timestamp != 999999
+    //               ? formatDate(
+    //                   DateTime.fromMillisecondsSinceEpoch(
+    //                       favorite.timestamp * 1000),
+    //                   [yyyy, '-', mm, '-', dd])
+    //               : "0000-00-00"),
+    //         ),
+    //     ],
+    //   );
+    // });
   }
 }
