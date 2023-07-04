@@ -6,7 +6,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'auth.dart';
 import 'root_page.dart';
-// import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'stream_provider.dart';
 
 Future<void> main() async {
@@ -20,25 +20,12 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _firestoreService = FirestoreService();
-    // _db.getFirestoreData();
-
-    final initialData = FavoriteDataModel(
-        message: "fetching", name: "fetching", timestamp: 999999);
     final darkTheme = ThemeData.from(
       colorScheme: ColorScheme.dark(primary: Colors.blueGrey),
     );
 
-    return MultiProvider(
-        providers: [
-          ChangeNotifierProvider(
-            create: ((context) => MyAppState()),
-          ),
-          StreamProvider<List<FavoriteDataModel>>(
-              create: (BuildContext context) =>
-                  _firestoreService.fetchFirestoreData(),
-              initialData: [initialData]),
-        ],
+    return ChangeNotifierProvider(
+        create: ((context) => MyAppState()),
         child: MaterialApp(
           title: 'flutter_application_1',
           theme: ThemeData(
@@ -268,53 +255,58 @@ class FavoritesPage extends StatelessWidget {
 class FirestoreDataPage extends StatelessWidget {
   const FirestoreDataPage({Key? key}) : super(key: key);
 
+  Stream<QuerySnapshot> fetchFirestoreData() {
+    FirebaseFirestore _db = FirebaseFirestore.instance;
+    return _db
+        .collection('favorite_word2')
+        .orderBy('timestamp', descending: true)
+        .snapshots();
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Using Provider.of to read stream data
-    var favorites = Provider.of<List<FavoriteDataModel>>(context);
-    return ListView(
-      children: [
-        Padding(
-            padding: const EdgeInsets.all(20),
-            child: Text(favorites.first.message == 'fetching'
-                ? 'Currently fetching data... please wait.'
-                : 'You have ${favorites.length} new messages.')),
-        for (var favorite in favorites)
-          ListTile(
-            leading: Icon(Icons.filter_drama),
-            title: Text(favorite.message),
-            trailing: Text(favorite.timestamp != 999999
-                ? formatDate(
-                    DateTime.fromMillisecondsSinceEpoch(
-                        favorite.timestamp * 1000),
-                    [yyyy, '-', mm, '-', dd])
-                : "0000-00-00"),
-          ),
-      ],
-    );
-    // Using Consumer to read stream data
-    // return Consumer<List<FavoriteDataModel>>(
-    //     builder: (context, favorites, child) {
-    //   return ListView(
-    //     children: [
-    //       Padding(
-    //           padding: const EdgeInsets.all(20),
-    //           child: Text(favorites.first.message == 'fetching'
-    //               ? 'Currently fetching data... please wait.'
-    //               : 'You have ${favorites.length} new messages.')),
-    //       for (var favorite in favorites)
-    //         ListTile(
-    //           leading: Icon(Icons.filter_drama),
-    //           title: Text(favorite.message),
-    //           trailing: Text(favorite.timestamp != 999999
-    //               ? formatDate(
-    //                   DateTime.fromMillisecondsSinceEpoch(
-    //                       favorite.timestamp * 1000),
-    //                   [yyyy, '-', mm, '-', dd])
-    //               : "0000-00-00"),
-    //         ),
-    //     ],
-    //   );
-    // });
+    return StreamBuilder<QuerySnapshot>(
+        stream: fetchFirestoreData(),
+        builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+          if (snapshot.hasError) {
+            return const Text('Something went wrong');
+          }
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Text("Loading");
+          }
+          return ListView(
+            children:
+                // Padding(
+                //     padding: const EdgeInsets.all(20),
+                //     child: Text(snapshot.data!.docs.first.data() == 'fetching'
+                //         ? 'Currently fetching data... please wait.'
+                //         : 'You have ${snapshot.data!.docs.length} new messages.')),
+                snapshot.data!.docs
+                    .map((DocumentSnapshot document) {
+                      Map<String, dynamic> data =
+                          document.data()! as Map<String, dynamic>;
+                      return ListTile(
+                          title: Text(data['text']),
+                          trailing: Text(formatDate(
+                              DateTime.fromMillisecondsSinceEpoch(
+                                  data['timestamp'] * 1000),
+                              [yyyy, '-', mm, '-', dd])));
+                    })
+                    .toList()
+                    .cast(),
+
+            // for(var document in snapshot.data!.docs)
+            //   ListTile(
+            //     leading: Icon(Icons.filter_drama),
+            //     title: Text(document.data()!['message']),
+            //     trailing: Text(document.data()!['timestamp'] != 999999
+            //         ? formatDate(
+            //             DateTime.fromMillisecondsSinceEpoch(
+            //                 favorite.timestamp * 1000),
+            //             [yyyy, '-', mm, '-', dd])
+            //         : "0000-00-00"),
+            //   )
+          );
+        });
   }
 }

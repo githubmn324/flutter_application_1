@@ -30,14 +30,15 @@ class FavoriteDataModel {
 class FirestoreService {
   FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  Stream<List<FavoriteDataModel>> fetchFirestoreData() {
+  // Stream<List<FavoriteDataModel>> fetchFirestoreData() {
+  Stream<QuerySnapshot> fetchFirestoreData() {
     return _db
         .collection('favorite_word2')
         .orderBy('timestamp', descending: true)
-        .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => FavoriteDataModel.fromJson(doc.data()))
-            .toList());
+        .snapshots();
+    // .map((snapshot) => snapshot.docs
+    //     .map((doc) => FavoriteDataModel.fromJson(doc.data()))
+    //     .toList());
   }
 
   Future<DocumentReference> sendToFirestore(String message) {
