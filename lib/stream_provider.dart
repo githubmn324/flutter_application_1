@@ -2,7 +2,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 
-// data model class
+// ---------- Firebase --------------
+class MyUserModel {}
+
+class FirebaseService {
+  FirebaseAuth _auth = FirebaseAuth.instance;
+}
+
+// ---------- Firestore --------------
+// define data model class
 class FavoriteDataModel {
   final String message;
   final String name;
@@ -11,6 +19,7 @@ class FavoriteDataModel {
   FavoriteDataModel(
       {required this.message, required this.name, required this.timestamp});
 
+  // keyが文字列で値がdynamicなMapオブジェクトを FavoriteDataModel に変換
   FavoriteDataModel.fromJson(Map<String, dynamic> parsedJson)
       : message = parsedJson['text'] ?? "",
         name = parsedJson['name'] ?? "",
@@ -34,9 +43,7 @@ class FirestoreService {
   Future<DocumentReference> sendToFirestore(String message) {
     print('sending message to Firestore: $message');
     print('Current User: ${FirebaseAuth.instance.currentUser!}');
-    return FirebaseFirestore.instance
-        .collection('favorite_word2')
-        .add(<String, dynamic>{
+    return _db.collection('favorite_word2').add(<String, dynamic>{
       'text': message,
       'timestamp': DateTime.now().millisecondsSinceEpoch,
       // 'name': FirebaseAuth.instance.currentUser!.displayName,

@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _db = FirestoreService();
+    final _firestoreService = FirestoreService();
     // _db.getFirestoreData();
 
     final initialData = FavoriteDataModel(
@@ -35,7 +35,8 @@ class MyApp extends StatelessWidget {
             create: ((context) => MyAppState()),
           ),
           StreamProvider<List<FavoriteDataModel>>(
-              create: (BuildContext context) => _db.fetchFirestoreData(),
+              create: (BuildContext context) =>
+                  _firestoreService.fetchFirestoreData(),
               initialData: [initialData]),
         ],
         child: MaterialApp(
