@@ -1,6 +1,7 @@
 import 'package:date_format/date_format.dart';
 import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/favorite_word.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -18,13 +19,15 @@ Future<void> main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+  FavoriteDataModel createErrorMessage(error) {
+    return FavoriteDataModel(
+        id: "", message: error, name: "error", timestamp: 999999);
+  }
+
   @override
   Widget build(BuildContext context) {
     final _firestoreService = FirestoreService();
-    // _db.getFirestoreData();
 
-    final initialData = FavoriteDataModel(
-        message: "fetching", name: "fetching", timestamp: 999999);
     final darkTheme = ThemeData.from(
       colorScheme: ColorScheme.dark(primary: Colors.blueGrey),
     );
@@ -37,11 +40,15 @@ class MyApp extends StatelessWidget {
           StreamProvider<List<FavoriteDataModel>>(
               create: (BuildContext context) =>
                   _firestoreService.fetchFirestoreData(),
-              initialData: [initialData],
-              catchError: (context, error) => [
-                    FavoriteDataModel(
-                        message: error.toString(), name: "", timestamp: 999999)
-                  ]),
+              initialData: [],
+              catchError: (context, error) =>
+                  [createErrorMessage(error.toString())]),
+          // FutureProvider<List<FavoriteDataModel>>(
+          //   create: (context) => _firestoreService.getFirestoreData(),
+          //   initialData: [initialData],
+          //   catchError: (context, error) =>
+          //       [createErrorMessage(error.toString())],
+          // )
         ],
         child: MaterialApp(
           title: 'flutter_application_1',
@@ -50,17 +57,12 @@ class MyApp extends StatelessWidget {
             colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepOrange),
           ),
           darkTheme: darkTheme,
-          // home: MyHomePage(),
-          // home: LoginPage(auth: Auth()),
           home: RootPage(auth: Auth()),
         ));
   }
 }
 
 class MyAppState extends ChangeNotifier {
-  MyAppState() {
-    // init();
-  }
   var current = WordPair.random();
 
   void getNext() {
@@ -120,7 +122,7 @@ class _MyHomePageState extends State<MyHomePage> {
         page = FavoritesPage();
         break;
       case 2:
-        page = FirestoreDataPage();
+        page = StreamFirestoreDataPage();
         break;
       default:
         throw UnimplementedError('no widget for $selectedIndex');
@@ -139,7 +141,8 @@ class _MyHomePageState extends State<MyHomePage> {
                   NavigationRailDestination(
                       icon: Icon(Icons.favorite), label: Text('Favorites')),
                   NavigationRailDestination(
-                      icon: Icon(Icons.filter_drama), label: Text('Firestore')),
+                      icon: Icon(Icons.filter_drama),
+                      label: Text('StreamFirestore')),
                 ],
                 selectedIndex: selectedIndex,
                 onDestinationSelected: (value) {
@@ -269,8 +272,8 @@ class FavoritesPage extends StatelessWidget {
   }
 }
 
-class FirestoreDataPage extends StatelessWidget {
-  const FirestoreDataPage({Key? key}) : super(key: key);
+class StreamFirestoreDataPage extends StatelessWidget {
+  const StreamFirestoreDataPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -280,20 +283,27 @@ class FirestoreDataPage extends StatelessWidget {
       children: [
         Padding(
             padding: const EdgeInsets.all(20),
-            child: Text(favorites.first.message == 'fetching'
-                ? 'Currently fetching data... please wait.'
-                : 'You have ${favorites.length} new messages.')),
+            child: (favorites.isEmpty)
+                ? Text('You have no message.')
+                : ((favorites.first.message == 'fetching')
+                    ? Center(child: CircularProgressIndicator())
+                    : Text('You have ${favorites.length} messages.'))),
         for (var favorite in favorites)
           ListTile(
-            leading: Icon(Icons.filter_drama),
-            title: Text(favorite.message),
-            trailing: Text(favorite.timestamp != 999999
-                ? formatDate(
-                    DateTime.fromMillisecondsSinceEpoch(
-                        favorite.timestamp * 1000),
-                    [yyyy, '-', mm, '-', dd])
-                : "0000-00-00"),
-          ),
+              leading: Icon(Icons.filter_drama),
+              title: Text(favorite.message),
+              subtitle: Text('(ID: $favorite.id)'),
+              trailing: Text(favorite.timestamp != 999999
+                  ? formatDate(
+                      DateTime.fromMillisecondsSinceEpoch(
+                          favorite.timestamp * 1000),
+                      [yyyy, '-', mm, '-', dd])
+                  : "0000-00-00"),
+              onTap: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => FavoriteWordPage(id: favorite.id),
+                ));
+              }),
       ],
     );
     // Using Consumer to read stream data
