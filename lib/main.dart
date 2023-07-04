@@ -6,7 +6,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'auth.dart';
 import 'root_page.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+// import 'package:cloud_firestore/cloud_firestore.dart';
 import 'stream_provider.dart';
 
 Future<void> main() async {
@@ -21,7 +21,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final _db = FirestoreService();
-    _db.getFirestoreData();
+    // _db.getFirestoreData();
+
     final initialData = FavoriteDataModel(
         message: "fetching", name: "fetching", timestamp: 999999);
     final darkTheme = ThemeData.from(
@@ -35,7 +36,7 @@ class MyApp extends StatelessWidget {
           ),
           StreamProvider<List<FavoriteDataModel>>(
               create: (BuildContext context) => _db.fetchFirestoreData(),
-              initialData: [initialData])
+              initialData: [initialData]),
         ],
         child: MaterialApp(
           title: 'flutter_application_1',
@@ -76,7 +77,7 @@ class MyAppState extends ChangeNotifier {
   // Future<void> init() async {
   //   print('init()');
   //   final Stream<QuerySnapshot> _favoriteWordStream = FirebaseFirestore.instance
-  //       .collection('favorite_word3')
+  //       .collection('favorite_word')
   //       .orderBy('timestamp', descending: true)
   //       .snapshots();
   //   _favoriteWordStream.listen((snapshot) {

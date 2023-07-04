@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-// import 'dart:async';
+import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 
 // data model class
@@ -38,7 +38,7 @@ class FirestoreService {
         .collection('favorite_word2')
         .add(<String, dynamic>{
       'text': message,
-      'timestamp': DateTime.now().microsecondsSinceEpoch,
+      'timestamp': DateTime.now().millisecondsSinceEpoch,
       // 'name': FirebaseAuth.instance.currentUser!.displayName,
       'email': FirebaseAuth.instance.currentUser!.email,
       'userId': FirebaseAuth.instance.currentUser!.uid,
@@ -47,7 +47,7 @@ class FirestoreService {
 
   Future<void> getFirestoreData() {
     return _db
-        .collection("favorite_word")
+        .collection("favorite_word2")
         .orderBy('timestamp', descending: true)
         .get()
         .then(
