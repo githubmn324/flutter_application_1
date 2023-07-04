@@ -37,7 +37,11 @@ class MyApp extends StatelessWidget {
           StreamProvider<List<FavoriteDataModel>>(
               create: (BuildContext context) =>
                   _firestoreService.fetchFirestoreData(),
-              initialData: [initialData]),
+              initialData: [initialData],
+              catchError: (context, error) => [
+                    FavoriteDataModel(
+                        message: error.toString(), name: "", timestamp: 999999)
+                  ]),
         ],
         child: MaterialApp(
           title: 'flutter_application_1',

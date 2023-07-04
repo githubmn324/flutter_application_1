@@ -21,7 +21,8 @@ class FavoriteDataModel {
 
   // keyが文字列で値がdynamicなMapオブジェクトを FavoriteDataModel に変換
   FavoriteDataModel.fromJson(Map<String, dynamic> parsedJson)
-      : message = parsedJson['text'] ?? "",
+      : message = parsedJson['message'],
+        // : message = parsedJson['text'] ?? "",
         name = parsedJson['name'] ?? "",
         timestamp = parsedJson['timestamp'];
 }
