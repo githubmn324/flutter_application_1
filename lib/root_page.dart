@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/login_page.dart';
-import 'package:flutter_application_1/main.dart';
+import 'package:flutter_application_1/home_page.dart';
 import 'auth.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -36,13 +36,20 @@ class _RoutePageState extends State<RootPage> {
     });
   }
 
+  void _signedOut() {
+    print('setState _authStatus = signedOut');
+    setState(() {
+      _authStatus = AuthStatus.notSignedIn;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     switch (_authStatus) {
       case AuthStatus.notSignedIn:
         return LoginPage(auth: widget.auth, onSignedIn: _signedIn);
       case AuthStatus.signedIn:
-        return MyHomePage();
+        return MyHomePage(auth: widget.auth, onSignedOut: _signedOut);
     }
   }
 }

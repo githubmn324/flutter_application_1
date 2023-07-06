@@ -34,19 +34,27 @@ class MyApp extends StatelessWidget {
 
     return MultiProvider(
         providers: [
+          // アプリ起動中にユーザがお気に入りしたお気に入り一覧を管理
           ChangeNotifierProvider(
             create: ((context) => MyAppState()),
           ),
+          // Firestoreのストリームデータを管理
           StreamProvider<List<FavoriteDataModel>>(
               create: (BuildContext context) =>
                   _firestoreService.fetchFirestoreData(),
               initialData: [],
               catchError: (context, error) =>
                   [createErrorMessage(error.toString())]),
+          // ProxyProvider<MyAppState, <List<FavoriteDataDetailModel>>>(
+          //     create: (_) => _firestoreService.getFirestoreData(),
+          //     update: (_, myAppState, dataListModel) {
+          //       dataListModel!.updateList(myAppState.favorites);
+          //       return dataListModel;
+          //     })
           // FutureProvider<List<FavoriteDataModel>>(
           //   create: (context) => _firestoreService.getFirestoreData(),
           //   initialData: [initialData],
-          //   catchError: (context, error) =>
+          //   catchError: (context, error) =>init()
           //       [createErrorMessage(error.toString())],
           // )
         ],
@@ -101,68 +109,6 @@ class MyAppState extends ChangeNotifier {
   //     notifyListeners();
   //   });
   // }
-}
-
-class MyHomePage extends StatefulWidget {
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  var selectedIndex = 0;
-
-  @override
-  Widget build(BuildContext context) {
-    Widget page;
-    switch (selectedIndex) {
-      case 0:
-        page = GeneratorPage();
-        break;
-      case 1:
-        page = FavoritesPage();
-        break;
-      case 2:
-        page = StreamFirestoreDataPage();
-        break;
-      default:
-        throw UnimplementedError('no widget for $selectedIndex');
-    }
-
-    return LayoutBuilder(builder: (context, constraints) {
-      return Scaffold(
-        body: Row(
-          children: [
-            SafeArea(
-              child: NavigationRail(
-                extended: constraints.maxWidth >= 600,
-                destinations: [
-                  NavigationRailDestination(
-                      icon: Icon(Icons.home), label: Text('Home')),
-                  NavigationRailDestination(
-                      icon: Icon(Icons.favorite), label: Text('Favorites')),
-                  NavigationRailDestination(
-                      icon: Icon(Icons.filter_drama),
-                      label: Text('StreamFirestore')),
-                ],
-                selectedIndex: selectedIndex,
-                onDestinationSelected: (value) {
-                  setState(() {
-                    selectedIndex = value;
-                  });
-                },
-              ),
-            ),
-            Expanded(
-              child: Container(
-                color: Theme.of(context).colorScheme.primaryContainer,
-                child: page,
-              ),
-            ),
-          ],
-        ),
-      );
-    });
-  }
 }
 
 class GeneratorPage extends StatelessWidget {
@@ -272,6 +218,55 @@ class FavoritesPage extends StatelessWidget {
   }
 }
 
+class ProxyTest extends StatelessWidget {
+  const ProxyTest({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return ChangeNotifierProxyProvider<MyAppState, FirestoreFavoriteList>(
+        create: (context) => FirestoreFavoriteList(),
+        update: (context, myAppState, firestoreFavoriteList) {
+          firestoreFavoriteList!.getFirestoreData(myAppState.favorites);
+          return firestoreFavoriteList;
+        },
+        child: FfList());
+  }
+}
+
+class FfList extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<FirestoreFavoriteList>(
+      builder: (context, model, _) {
+        return ListView.builder(
+          itemCount: model.firestoreDataList.length,
+          itemBuilder: (context, index) {
+            return Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                children: <Widget>[
+                  Expanded(
+                    child: Text(model.firestoreDataList[index].message),
+                  ),
+                  Offstage(
+                    offstage: !model.firestoreDataList[index].isFavorite,
+                    child: Text(
+                      'お気に入り',
+                      style: TextStyle(
+                        color: Theme.of(context).primaryColor,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
 class StreamFirestoreDataPage extends StatelessWidget {
   const StreamFirestoreDataPage({Key? key}) : super(key: key);
 
@@ -292,7 +287,7 @@ class StreamFirestoreDataPage extends StatelessWidget {
           ListTile(
               leading: Icon(Icons.filter_drama),
               title: Text(favorite.message),
-              subtitle: Text('(ID: $favorite.id)'),
+              subtitle: Text('(ID: ${favorite.id})'),
               trailing: Text(favorite.timestamp != 999999
                   ? formatDate(
                       DateTime.fromMillisecondsSinceEpoch(
