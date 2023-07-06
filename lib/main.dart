@@ -70,6 +70,7 @@ class MyAppState extends ChangeNotifier {
 
   List<String> firestoreDataList = [];
   StreamSubscription<QuerySnapshot>? firestoreSubscription;
+
   Future<void> init() async {
     print('init()');
 
@@ -108,6 +109,24 @@ class MyAppState extends ChangeNotifier {
       'name': FirebaseAuth.instance.currentUser!.displayName,
       'userId': FirebaseAuth.instance.currentUser!.uid,
     });
+  }
+
+  void pauseSubscription() {
+    print('pasue subscription');
+    firestoreSubscription?.pause();
+    notifyListeners();
+  }
+
+  void resumeSubscription() {
+    print('resume subscription');
+    firestoreSubscription?.resume();
+    notifyListeners();
+  }
+
+  void cancelSubscription() {
+    print('cancel subscription');
+    firestoreSubscription?.cancel();
+    notifyListeners();
   }
 }
 
@@ -304,19 +323,52 @@ class FirestoreDataPage extends StatelessWidget {
       );
     }
 
-    return ListView(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(20),
-          child: Text(
-              'You have ${appState.firestoreDataList.length} firestoreData:'),
-        ),
-        for (var message in appState.firestoreDataList)
-          ListTile(
-            leading: Icon(Icons.filter_drama),
-            title: Text(message),
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        children: <Widget>[
+          Row(
+            children: [
+              ElevatedButton(
+                  onPressed: () => appState.pauseSubscription(),
+                  child: Text('pause')),
+              SizedBox(
+                width: 5,
+              ),
+              ElevatedButton(
+                  onPressed: () => appState.resumeSubscription(),
+                  child: Text('resume')),
+              SizedBox(
+                width: 5,
+              ),
+              ElevatedButton(
+                  onPressed: () => appState.cancelSubscription(),
+                  child: Text('cancel')),
+            ],
           ),
-      ],
+          Padding(
+              padding: const EdgeInsets.all(18),
+              child: Text(
+                'You have ${appState.firestoreDataList.length} firestoreData:',
+                style: TextStyle(
+                    // fontSize: 20,
+                    fontWeight: FontWeight.bold),
+              )),
+          Expanded(
+            child: ListView(
+              scrollDirection: Axis.vertical,
+              shrinkWrap: true,
+              children: [
+                for (var message in appState.firestoreDataList)
+                  ListTile(
+                    leading: Icon(Icons.filter_drama),
+                    title: Text(message),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
