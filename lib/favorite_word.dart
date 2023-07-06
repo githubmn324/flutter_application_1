@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'stream_provider.dart';
 
-class FavoriteWordPage extends StatelessWidget {
+class FavoriteWordDetailsPage extends StatelessWidget {
   final String id;
   final FirestoreService firestoreService = FirestoreService();
   final DeleteData deleteData = DeleteData();
 
-  FavoriteWordPage({required this.id});
+  FavoriteWordDetailsPage({required this.id});
 
   @override
   Widget build(BuildContext context) {
@@ -26,12 +26,12 @@ class FavoriteWordPage extends StatelessWidget {
         ChangeNotifierProvider<DeleteData>(
           create: (_) => DeleteData(),
         ),
-      ], child: DetailContainer()),
+      ], child: FavWordDetailsContent()),
     );
   }
 }
 
-class DetailContainer extends StatelessWidget {
+class FavWordDetailsContent extends StatelessWidget {
   final FirestoreService firestoreService = FirestoreService();
 
   @override

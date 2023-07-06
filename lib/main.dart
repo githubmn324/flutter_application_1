@@ -273,7 +273,7 @@ class StreamFirestoreDataPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Using Provider.of to read stream data
-    var favorites = Provider.of<List<FavoriteDataModel>>(context);
+    var favorites = Provider.of<List<FavoriteDataModel>>(context, listen: true);
     return ListView(
       children: [
         Padding(
@@ -296,7 +296,8 @@ class StreamFirestoreDataPage extends StatelessWidget {
                   : "0000-00-00"),
               onTap: () {
                 Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => FavoriteWordPage(id: favorite.id),
+                  builder: (context) =>
+                      FavoriteWordDetailsPage(id: favorite.id),
                 ));
               }),
       ],

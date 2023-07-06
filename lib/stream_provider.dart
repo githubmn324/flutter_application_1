@@ -77,6 +77,7 @@ class FirestoreService with ChangeNotifier {
       isPrivate: false,
       isFavorite: false);
 
+  // 単一ストリーム
   Stream<List<FavoriteDataModel>> fetchFirestoreData() {
     return _db
         .collection('favorite_word2')
@@ -85,6 +86,16 @@ class FirestoreService with ChangeNotifier {
         .map((snapshot) => snapshot.docs
             .map((doc) => FavoriteDataModel.fromJson(doc.id, doc.data()))
             .toList());
+  }
+
+  // ストリームサブスクリプション
+  StreamSubscription<QuerySnapshot> createStreamSubscription() {
+    return _db
+        .collection('favorite_word2')
+        .orderBy('timestamp', descending: true)
+        .snapshots()
+        .listen((snapshot) => snapshot.docs
+            .map((doc) => FavoriteDataModel.fromJson(doc.id, doc.data())));
   }
 
   Future<void> sendToFirestore(String message) async {
