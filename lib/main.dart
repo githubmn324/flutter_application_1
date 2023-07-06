@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -66,24 +68,31 @@ class MyAppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  var firestoreDataList = <String>[];
+  List<String> firestoreDataList = [];
+  StreamSubscription<QuerySnapshot>? firestoreSubscription;
   Future<void> init() async {
     print('init()');
-    FirebaseFirestore.instance
-        .collection('favorite_word')
-        .orderBy('timestamp', descending: true)
-        .snapshots()
-        .listen((snapshot) {
-      print('firestore changed detected!!');
-      print('docs count: ${snapshot.docs.length}');
-      print('docChanges: ${snapshot.docChanges}');
-      final _firestoreDataList = <String>[];
-      for (final document in snapshot.docs) {
-        _firestoreDataList.add(
-          document.data()['text'] as String,
-        );
+
+    FirebaseAuth.instance.userChanges().listen((user) {
+      if (user != null) {
+        firestoreSubscription = FirebaseFirestore.instance
+            .collection('favorite_word')
+            .orderBy('timestamp', descending: true)
+            .snapshots()
+            .listen((snapshot) {
+          print('firestore changed detected!!');
+          print('docs count: ${snapshot.docs.length}');
+          print('docChanges: ${snapshot.docChanges}');
+          firestoreDataList = [];
+          for (final document in snapshot.docs) {
+            firestoreDataList.add(document.data()['text'] as String);
+          }
+          notifyListeners();
+        });
+      } else {
+        firestoreDataList = [];
+        firestoreSubscription?.cancel();
       }
-      firestoreDataList = _firestoreDataList;
       notifyListeners();
     });
   }
@@ -103,6 +112,19 @@ class MyAppState extends ChangeNotifier {
 }
 
 class MyHomePage extends StatefulWidget {
+  MyHomePage({required this.auth, required this.onSignedOut});
+  final BaseAuth auth;
+  final VoidCallback onSignedOut;
+
+  void _onSignedOut() async {
+    try {
+      await auth.signOut();
+      onSignedOut();
+    } catch (e) {
+      print(e);
+    }
+  }
+
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
@@ -141,6 +163,10 @@ class _MyHomePageState extends State<MyHomePage> {
                   NavigationRailDestination(
                       icon: Icon(Icons.filter_drama), label: Text('Firestore')),
                 ],
+                trailing: IconButton(
+                  onPressed: widget._onSignedOut,
+                  icon: Icon(Icons.logout),
+                ),
                 selectedIndex: selectedIndex,
                 onDestinationSelected: (value) {
                   setState(() {

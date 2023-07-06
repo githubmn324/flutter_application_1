@@ -36,13 +36,20 @@ class _RoutePageState extends State<RootPage> {
     });
   }
 
+  void _signedOut() {
+    print('setState _authStatus = signedOut');
+    setState(() {
+      _authStatus = AuthStatus.notSignedIn;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     switch (_authStatus) {
       case AuthStatus.notSignedIn:
         return LoginPage(auth: widget.auth, onSignedIn: _signedIn);
       case AuthStatus.signedIn:
-        return MyHomePage();
+        return MyHomePage(auth: widget.auth, onSignedOut: _signedOut);
     }
   }
 }
