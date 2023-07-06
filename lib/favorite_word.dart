@@ -17,11 +17,15 @@ class FavoriteWordPage extends StatelessWidget {
         FutureProvider<FavoriteDataDetailModel>(
             create: (context) => firestoreService.getIndivFirestoreData(id),
             initialData: firestoreService.initialData),
+        // // pattern(1) Declare FutureProvider Here　⇒　× レンダリング時に削除処理が実行されてしまう
         // FutureProvider<DeleteProcessModel>(
-        //   create: (_) => DeleteData(),
-        //   initialData: DeleteProcessModel(
-        //       isSucceed: false, message: 'processing'),
-        // ),
+        //     create: (context) => firestoreService.deleteDocument(id),
+        //     initialData:
+        //         DeleteProcessModel(isSucceed: true, message: 'processing')),
+        // pattern(3) Using ChangeNotifierProvider
+        ChangeNotifierProvider<DeleteData>(
+          create: (_) => DeleteData(),
+        ),
       ], child: DetailContainer()),
     );
   }
@@ -34,6 +38,9 @@ class DetailContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     FavoriteDataDetailModel favoriteDataDetailModel =
         Provider.of<FavoriteDataDetailModel>(context);
+    // // pattern(1) Using Future Provider
+    // DeleteProcessModel deleteProcessModel =
+    //     Provider.of<DeleteProcessModel>(context);
     return Container(
         color: Theme.of(context).colorScheme.primaryContainer,
         child: Center(
@@ -51,13 +58,31 @@ class DetailContainer extends StatelessWidget {
                     Text(
                         'isPrivate: ${favoriteDataDetailModel.isPrivate.toString()}'),
                     SizedBox(height: 30),
+                    // pattern(3) Using ChangeNotifierProvider
+                    Consumer<DeleteData>(builder: (context, deleteData, child) {
+                      return Text(
+                          '${deleteData.deleteProcessModel.isSucceed}: ${deleteData.deleteProcessModel.message}');
+                    }),
                     ElevatedButton.icon(
-                        onPressed: () => FutureProvider<DeleteProcessModel>(
-                              create: (_) => firestoreService
-                                  .deleteDocument(favoriteDataDetailModel.id),
-                              initialData: DeleteProcessModel(
-                                  isSucceed: false, message: 'processing'),
-                            ),
+                        onPressed: () {
+                          print('clicked');
+                          // // pattern(1) read future provider here　⇒　×
+                          // Text(deleteProcessModel.message);
+                          // // pattern(2) Using Future Provier Here
+                          // FutureProvider<DeleteProcessModel>(
+                          //   create: (_) async {
+                          //     print('ID: ${favoriteDataDetailModel.id}を消します');
+                          //     return firestoreService
+                          //         .deleteDocument(favoriteDataDetailModel.id);
+                          //   },
+                          //   initialData: DeleteProcessModel(
+                          //       isSucceed: false, message: 'processing'),
+                          // );
+                          // // pattern(3) Using ChangeNotifier Provider
+                          context
+                              .read<DeleteData>()
+                              .deleteDocument(favoriteDataDetailModel.id);
+                        },
                         icon: Icon(Icons.delete),
                         label: Text('Delete')),
                   ],
