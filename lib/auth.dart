@@ -59,15 +59,6 @@ class Auth implements BaseAuth {
     }
   }
 
-  // @override
-  // String currentUser() {
-  //   final user! = _firebaseAuth.currentUser;
-  //   if (user == null) {
-  //     return "";
-  //   } else {
-  //     return user.uid;
-  //   }
-  // }
   @override
   Future<void> signOut() async {
     return _firebaseAuth.signOut();

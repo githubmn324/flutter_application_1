@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'auth.dart';
-import 'main.dart';
+import '../auth.dart';
+import '../main.dart';
+import '../value_listenable.dart';
 
 class MyHomePage extends StatefulWidget {
   MyHomePage({required this.auth, required this.onSignedOut});
@@ -39,6 +40,9 @@ class _MyHomePageState extends State<MyHomePage> {
       case 3:
         page = ProxyTest();
         break;
+      case 4:
+        page = ValueListenableTest();
+        break;
       default:
         throw UnimplementedError('no widget for $selectedIndex');
     }
@@ -61,6 +65,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   NavigationRailDestination(
                       icon: Icon(Icons.portable_wifi_off_sharp),
                       label: Text('ProxyTest')),
+                  NavigationRailDestination(
+                      icon: Icon(Icons.telegram),
+                      label: Text('ValueListenableTest')),
                 ],
                 trailing: IconButton(
                   onPressed: widget._onSignedOut,

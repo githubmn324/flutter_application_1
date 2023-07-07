@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'auth.dart';
+import '../auth.dart';
 
 class LoginPage extends StatefulWidget {
   // when creating login page, pass auth parameter to login page create an instance of abstract class

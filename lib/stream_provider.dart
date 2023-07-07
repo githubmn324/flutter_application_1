@@ -2,67 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-
-// ---------- Firebase --------------
-class MyUserModel {}
-
-class FirebaseService {
-  FirebaseAuth _auth = FirebaseAuth.instance;
-}
-
-// ---------- Firestore --------------
-// define data model class
-class FavoriteDataModel {
-  final String id;
-  final String message;
-  final String name;
-  final int timestamp;
-
-  FavoriteDataModel(
-      {required this.id,
-      required this.message,
-      required this.name,
-      required this.timestamp});
-
-  // keyが文字列で値がdynamicなMapオブジェクトを FavoriteDataModel に変換
-  FavoriteDataModel.fromJson(String documentId, Map<String, dynamic> parsedJson)
-      : id = documentId,
-        // : message = parsedJson['message'], // catchErrorの動作確認
-        message = parsedJson['text'] ?? "",
-        name = parsedJson['name'] ?? "",
-        timestamp = parsedJson['timestamp'];
-}
-
-class FavoriteDataDetailModel {
-  final String id;
-  final String message;
-  final String name;
-  final int timestamp;
-  final String email;
-  final bool isPrivate;
-  final bool isFavorite;
-
-  FavoriteDataDetailModel(
-      {required this.id,
-      required this.message,
-      required this.name,
-      required this.timestamp,
-      required this.email,
-      required this.isPrivate,
-      required this.isFavorite});
-
-  // keyが文字列で値がdynamicなMapオブジェクトを FavoriteDataModel に変換
-  FavoriteDataDetailModel.fromJson(
-      String documentId, bool favorite, Map<String, dynamic> parsedJson)
-      : id = documentId,
-        email = parsedJson['email'] ?? "",
-        message = parsedJson['text'] ?? "",
-        name = parsedJson['name'] ?? "",
-        timestamp = parsedJson['timestamp'],
-        isPrivate = parsedJson['isPrivate'],
-        isFavorite = favorite;
-}
+import 'models/favorite_word.dart';
+import 'models/favorite_word_details.dart';
+import 'models/delete_result.dart';
 
 // function that returns stream
 class FirestoreService with ChangeNotifier {
@@ -77,7 +19,7 @@ class FirestoreService with ChangeNotifier {
       isPrivate: false,
       isFavorite: false);
 
-  // 単一ストリーム
+  // ストリーム
   Stream<List<FavoriteDataModel>> fetchFirestoreData() {
     return _db
         .collection('favorite_word2')
@@ -149,44 +91,66 @@ class FirestoreService with ChangeNotifier {
     }, onError: (e) => throw "Error completing: $e");
   }
 
-  Future<DeleteProcessModel> deleteDocument(String id) async {
-    print('calling deleteDaocument Firestore ID: $id');
+//   // // pattern (2)
+//   // Future<void> deleteDocument(String id) async {
+//   Future<DeleteProcessModel> deleteDocument(String id) async {
+//     print('calling deleteDaocument Firestore ID: $id');
+//     return FirebaseFirestore.instance
+//         .collection("favorite_word2")
+//         .doc(id)
+//         .delete()
+//         .then(
+//             // (doc) => print('$id was successfully deleted'),
+//             (doc) => DeleteProcessModel(
+//                 isSucceed: true, message: '$id was successfully deleted'),
+//             // onError: (e) => print('Error while deleting $id: $e'),
+//             onError: (e) => DeleteProcessModel(
+//                 isSucceed: true, message: 'Error while deleting $id: $e'));
+//   }
+// }
+
+// class DeleteProcess extends ValueNotifier<String> {
+//   DeleteProcess(super.value);
+
+//   Future<void> deleteDocument(String id) async {
+//     print('calling deleteDaocument Firestore ID: $id');
+//     return FirebaseFirestore.instance
+//         .collection("favorite_word2")
+//         .doc(id)
+//         .delete()
+//         .then((doc) => value = '$id was successfully deleted',
+//             onError: (e) => value = 'Error while deleting $id: $e');
+//   }
+}
+
+class DeleteData extends ChangeNotifier {
+  DeleteResultModel deleteProcessModel =
+      DeleteResultModel(isSucceed: false, message: "");
+
+  Future<DeleteResultModel> deleteDocument(String id) {
+    print('calling deleteDocument Firestore ID: $id');
     return FirebaseFirestore.instance
         .collection("favorite_word2")
         .doc(id)
         .delete()
         .then(
-            (doc) => DeleteProcessModel(
+            (doc) => DeleteResultModel(
                 isSucceed: true, message: '$id was successfully deleted'),
-            onError: (e) => DeleteProcessModel(
-                isSucceed: true, message: 'Error while deleting $id: $e'));
-  }
-}
+            // deleteProcessModel = DeleteProcessModel(
+            //     isSucceed: true, message: '$id was successfully deleted');
 
-class DeleteProcessModel {
-  final bool isSucceed;
-  final String message;
+            // notifyListeners();
+            //   return deleteProcessModel;
+            // }, onError: (e) {
+            onError: (e) => DeleteResultModel(
+                isSucceed: true, message: 'Error while deleting $id: $e')
+            // deleteProcessModel = DeleteProcessModel(
+            //     isSucceed: true, message: 'Error while deleting $id: $e');
 
-  DeleteProcessModel({required this.isSucceed, required this.message});
-}
-
-class DeleteData extends ChangeNotifier {
-  DeleteProcessModel deleteProcessModel =
-      DeleteProcessModel(isSucceed: false, message: "");
-
-  Future<void> deleteDocument(String id) async {
-    print('calling deleteDaocument Firestore ID: $id');
-    await FirebaseFirestore.instance
-        .collection("favorite_word2")
-        .doc(id)
-        .delete()
-        .then(
-            (doc) => deleteProcessModel = DeleteProcessModel(
-                isSucceed: true, message: '$id was successfully deleted'),
-            onError: (e) => deleteProcessModel = DeleteProcessModel(
-                isSucceed: true, message: 'Error while deleting $id: $e'));
-
-    notifyListeners();
+            // notifyListeners();
+            // return deleteProcessModel;
+            // }
+            );
   }
 }
 

@@ -1,14 +1,15 @@
 import 'package:date_format/date_format.dart';
-import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/favorite_word.dart';
+import 'package:flutter_application_1/pages/favorite_word.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'auth.dart';
 import 'root_page.dart';
-// import 'package:cloud_firestore/cloud_firestore.dart';
 import 'stream_provider.dart';
+import 'providers/app_state.dart';
+import 'package:english_words/english_words.dart';
+import 'models/favorite_word.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -68,47 +69,6 @@ class MyApp extends StatelessWidget {
           home: RootPage(auth: Auth()),
         ));
   }
-}
-
-class MyAppState extends ChangeNotifier {
-  var current = WordPair.random();
-
-  void getNext() {
-    current = WordPair.random();
-    notifyListeners();
-  }
-
-  var favorites = <WordPair>[];
-  void toggleFavorite() {
-    if (favorites.contains(current)) {
-      favorites.remove(current);
-    } else {
-      favorites.add(current);
-    }
-    notifyListeners();
-  }
-
-  var firestoreDataList = <String>[];
-  // Future<void> init() async {
-  //   print('init()');
-  //   final Stream<QuerySnapshot> _favoriteWordStream = FirebaseFirestore.instance
-  //       .collection('favorite_word')
-  //       .orderBy('timestamp', descending: true)
-  //       .snapshots();
-  //   _favoriteWordStream.listen((snapshot) {
-  //     print('firestore changed detected!!');
-  //     print('docs count: ${snapshot.docs.length}'); // 変更後のsnapshotの状態全て
-  //     print('docChanges: ${snapshot.docChanges}'); // 変更のみ検知
-  //     final dataList = <String>[];
-  //     for (final document in snapshot.docs) {
-  //       dataList.add(
-  //         document.data()!['text'] as String,
-  //       );
-  //     }
-  //     firestoreDataList = dataList;
-  //     notifyListeners();
-  //   });
-  // }
 }
 
 class GeneratorPage extends StatelessWidget {
