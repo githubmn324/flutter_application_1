@@ -2,9 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'models/favorite_word.dart';
-import 'models/favorite_word_details.dart';
-import 'models/delete_result.dart';
+import '../models/favorite_word.dart';
+import '../models/favorite_word_details.dart';
+import '../models/delete_result.dart';
 
 // function that returns stream
 class FirestoreService with ChangeNotifier {

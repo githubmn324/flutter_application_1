@@ -1,12 +1,10 @@
-import 'package:date_format/date_format.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/pages/favorite_word.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'auth.dart';
 import 'root_page.dart';
-import 'stream_provider.dart';
+import 'providers/stream_provider.dart';
 import 'providers/app_state.dart';
 import 'package:english_words/english_words.dart';
 import 'models/favorite_word.dart';
@@ -175,116 +173,5 @@ class FavoritesPage extends StatelessWidget {
           ),
       ],
     );
-  }
-}
-
-class ProxyTest extends StatelessWidget {
-  const ProxyTest({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProxyProvider<MyAppState, FirestoreFavoriteList>(
-        create: (context) => FirestoreFavoriteList(),
-        update: (context, myAppState, firestoreFavoriteList) {
-          firestoreFavoriteList!.getFirestoreData(myAppState.favorites);
-          return firestoreFavoriteList;
-        },
-        child: FfList());
-  }
-}
-
-class FfList extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Consumer<FirestoreFavoriteList>(
-      builder: (context, model, _) {
-        return ListView.builder(
-          itemCount: model.firestoreDataList.length,
-          itemBuilder: (context, index) {
-            return Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                children: <Widget>[
-                  Expanded(
-                    child: Text(model.firestoreDataList[index].message),
-                  ),
-                  Offstage(
-                    offstage: !model.firestoreDataList[index].isFavorite,
-                    child: Text(
-                      'お気に入り',
-                      style: TextStyle(
-                        color: Theme.of(context).primaryColor,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-}
-
-class StreamFirestoreDataPage extends StatelessWidget {
-  const StreamFirestoreDataPage({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    // Using Provider.of to read stream data
-    var favorites = Provider.of<List<FavoriteDataModel>>(context, listen: true);
-    return ListView(
-      children: [
-        Padding(
-            padding: const EdgeInsets.all(20),
-            child: (favorites.isEmpty)
-                ? Text('You have no message.')
-                : ((favorites.first.message == 'fetching')
-                    ? Center(child: CircularProgressIndicator())
-                    : Text('You have ${favorites.length} messages.'))),
-        for (var favorite in favorites)
-          ListTile(
-              leading: Icon(Icons.filter_drama),
-              title: Text(favorite.message),
-              subtitle: Text('(ID: ${favorite.id})'),
-              trailing: Text(favorite.timestamp != 999999
-                  ? formatDate(
-                      DateTime.fromMillisecondsSinceEpoch(
-                          favorite.timestamp * 1000),
-                      [yyyy, '-', mm, '-', dd])
-                  : "0000-00-00"),
-              onTap: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) =>
-                      FavoriteWordDetailsPage(id: favorite.id),
-                ));
-              }),
-      ],
-    );
-    // Using Consumer to read stream data
-    // return Consumer<List<FavoriteDataModel>>(
-    //     builder: (context, favorites, child) {
-    //   return ListView(
-    //     children: [
-    //       Padding(
-    //           padding: const EdgeInsets.all(20),
-    //           child: Text(favorites.first.message == 'fetching'
-    //               ? 'Currently fetching data... please wait.'
-    //               : 'You have ${favorites.length} new messages.')),
-    //       for (var favorite in favorites)
-    //         ListTile(
-    //           leading: Icon(Icons.filter_drama),
-    //           title: Text(favorite.message),
-    //           trailing: Text(favorite.timestamp != 999999
-    //               ? formatDate(
-    //                   DateTime.fromMillisecondsSinceEpoch(
-    //                       favorite.timestamp * 1000),
-    //                   [yyyy, '-', mm, '-', dd])
-    //               : "0000-00-00"),
-    //         ),
-    //     ],
-    //   );
-    // });
   }
 }

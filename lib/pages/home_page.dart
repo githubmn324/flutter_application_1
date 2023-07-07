@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../auth.dart';
 import '../main.dart';
+import './favorite_word.dart';
+import './fetch_proxy.dart';
 import 'value_listenable.dart';
 
 class MyHomePage extends StatefulWidget {
