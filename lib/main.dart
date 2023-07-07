@@ -38,12 +38,12 @@ class MyApp extends StatelessWidget {
             create: ((context) => MyAppState()),
           ),
           // Firestoreのストリームデータを管理
-          StreamProvider<List<FavoriteDataModel>>(
-              create: (BuildContext context) =>
-                  _firestoreService.fetchFirestoreData(),
-              initialData: [],
-              catchError: (context, error) =>
-                  [createErrorMessage(error.toString())]),
+          // StreamProvider<List<FavoriteDataModel>>(
+          //     create: (BuildContext context) =>
+          //         _firestoreService.fetchFirestoreData(),
+          //     initialData: [],
+          //     catchError: (context, error) =>
+          //         [createErrorMessage(error.toString())]),
           // ProxyProvider<MyAppState, <List<FavoriteDataDetailModel>>>(
           //     create: (_) => _firestoreService.getFirestoreData(),
           //     update: (_, myAppState, dataListModel) {

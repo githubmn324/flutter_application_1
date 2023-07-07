@@ -4,6 +4,10 @@ import '../main.dart';
 import './favorite_word.dart';
 import './fetch_proxy.dart';
 import 'value_listenable.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_application_1/models/favorite_word.dart';
+import '../providers/stream_provider.dart';
+import '../providers/app_state.dart';
 
 class MyHomePage extends StatefulWidget {
   MyHomePage({required this.auth, required this.onSignedOut});
@@ -26,8 +30,15 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   var selectedIndex = 0;
 
+  final _firestoreService = FirestoreService();
+  FavoriteDataModel createErrorMessage(error) {
+    return FavoriteDataModel(
+        id: "", message: error, name: "error", timestamp: 999999);
+  }
+
   @override
   Widget build(BuildContext context) {
+    var appState = context.watch<MyAppState>();
     Widget page;
     switch (selectedIndex) {
       case 0:
@@ -37,7 +48,14 @@ class _MyHomePageState extends State<MyHomePage> {
         page = FavoritesPage();
         break;
       case 2:
-        page = StreamFirestoreDataPage();
+        page = StreamProvider<List<FavoriteDataModel>>(
+            create: (BuildContext context) =>
+                _firestoreService.fetchFirestoreData(),
+            initialData: [],
+            catchError: (context, error) =>
+                [createErrorMessage(error.toString())],
+            child: StreamFirestoreDataPage());
+
         break;
       case 3:
         page = ProxyTest();

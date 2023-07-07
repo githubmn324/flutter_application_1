@@ -21,14 +21,19 @@ class FirestoreService with ChangeNotifier {
 
   // ストリーム
   Stream<List<FavoriteDataModel>> fetchFirestoreData() {
-    print('stream from firestore started!!!');
-    return _db
-        .collection('favorite_word2')
-        .orderBy('timestamp', descending: true)
-        .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => FavoriteDataModel.fromJson(doc.id, doc.data()))
-            .toList());
+    if (FirebaseAuth.instance.currentUser == null) {
+      print('User logged out!!!');
+      return Stream.empty();
+    } else {
+      print('stream from firestore started!!!');
+      return _db
+          .collection('favorite_word2')
+          .orderBy('timestamp', descending: true)
+          .snapshots()
+          .map((snapshot) => snapshot.docs
+              .map((doc) => FavoriteDataModel.fromJson(doc.id, doc.data()))
+              .toList());
+    }
   }
 
   // // ストリームサブスクリプション
