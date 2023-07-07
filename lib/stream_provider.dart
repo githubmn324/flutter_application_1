@@ -21,6 +21,7 @@ class FirestoreService with ChangeNotifier {
 
   // ストリーム
   Stream<List<FavoriteDataModel>> fetchFirestoreData() {
+    print('stream from firestore started!!!');
     return _db
         .collection('favorite_word2')
         .orderBy('timestamp', descending: true)
@@ -30,15 +31,15 @@ class FirestoreService with ChangeNotifier {
             .toList());
   }
 
-  // ストリームサブスクリプション
-  StreamSubscription<QuerySnapshot> createStreamSubscription() {
-    return _db
-        .collection('favorite_word2')
-        .orderBy('timestamp', descending: true)
-        .snapshots()
-        .listen((snapshot) => snapshot.docs
-            .map((doc) => FavoriteDataModel.fromJson(doc.id, doc.data())));
-  }
+  // // ストリームサブスクリプション
+  // StreamSubscription<QuerySnapshot> createStreamSubscription() {
+  //   return _db
+  //       .collection('favorite_word2')
+  //       .orderBy('timestamp', descending: true)
+  //       .snapshots()
+  //       .listen((snapshot) => snapshot.docs
+  //           .map((doc) => FavoriteDataModel.fromJson(doc.id, doc.data())));
+  // }
 
   Future<void> sendToFirestore(String message) async {
     print('sending message to Firestore: $message');
