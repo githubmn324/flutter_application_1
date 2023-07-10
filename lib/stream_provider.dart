@@ -77,7 +77,7 @@ class FirestoreService with ChangeNotifier {
       isPrivate: false,
       isFavorite: false);
 
-  // 単一ストリーム
+  // ストリーム
   Stream<List<FavoriteDataModel>> fetchFirestoreData() {
     return _db
         .collection('favorite_word2')

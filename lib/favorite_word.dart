@@ -17,15 +17,16 @@ class FavoriteWordDetailsPage extends StatelessWidget {
         FutureProvider<FavoriteDataDetailModel>(
             create: (context) => firestoreService.getIndivFirestoreData(id),
             initialData: firestoreService.initialData),
-        // // pattern(1) Declare FutureProvider Here　⇒　× レンダリング時に削除処理が実行されてしまう
-        // FutureProvider<DeleteProcessModel>(
-        //     create: (context) => firestoreService.deleteDocument(id),
-        //     initialData:
-        //         DeleteProcessModel(isSucceed: true, message: 'processing')),
-        // pattern(3) Using ChangeNotifierProvider
-        ChangeNotifierProvider<DeleteData>(
-          create: (_) => DeleteData(),
-        ),
+        // pattern(1) Declare FutureProvider Here　⇒　× レンダリング時に削除処理が実行されてしまう
+        FutureProvider<DeleteProcessModel>(
+            lazy: true,
+            create: (context) => firestoreService.deleteDocument(id),
+            initialData:
+                DeleteProcessModel(isSucceed: true, message: 'processing')),
+        // // pattern(3) Using ChangeNotifierProvider
+        // ChangeNotifierProvider<DeleteData>(
+        //   create: (_) => DeleteData(),
+        // ),
       ], child: FavWordDetailsContent()),
     );
   }
@@ -59,15 +60,19 @@ class FavWordDetailsContent extends StatelessWidget {
                         'isPrivate: ${favoriteDataDetailModel.isPrivate.toString()}'),
                     SizedBox(height: 30),
                     // pattern(3) Using ChangeNotifierProvider
-                    Consumer<DeleteData>(builder: (context, deleteData, child) {
-                      return Text(
-                          '${deleteData.deleteProcessModel.isSucceed}: ${deleteData.deleteProcessModel.message}');
-                    }),
+                    // Consumer<DeleteData>(builder: (context, deleteData, child) {
+                    //   return Text(
+                    //       '${deleteData.deleteProcessModel.isSucceed}: ${deleteData.deleteProcessModel.message}');
+                    // }),
                     ElevatedButton.icon(
                         onPressed: () {
                           print('clicked');
                           // // pattern(1) read future provider here　⇒　×
-                          // Text(deleteProcessModel.message);
+                          // DeleteProcessModel deleteProcessModel =
+                          //     Provider.of<DeleteProcessModel>(context,
+                          //         listen: false);
+                          // // pattern(1-2)
+                          context.read<DeleteProcessModel>();
                           // // pattern(2) Using Future Provier Here
                           // FutureProvider<DeleteProcessModel>(
                           //   create: (_) async {
@@ -79,9 +84,9 @@ class FavWordDetailsContent extends StatelessWidget {
                           //       isSucceed: false, message: 'processing'),
                           // );
                           // // pattern(3) Using ChangeNotifier Provider
-                          context
-                              .read<DeleteData>()
-                              .deleteDocument(favoriteDataDetailModel.id);
+                          // context
+                          //     .read<DeleteData>()
+                          //     .deleteDocument(favoriteDataDetailModel.id);
                         },
                         icon: Icon(Icons.delete),
                         label: Text('Delete')),
