@@ -3,6 +3,9 @@ import 'package:flutter_application_1/pages/login_page.dart';
 import 'package:flutter_application_1/pages/home_page.dart';
 import 'auth.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
+import '../providers/stream_provider.dart';
+import 'package:flutter_application_1/models/favorite_word.dart';
 
 class RootPage extends StatefulWidget {
   RootPage({required this.auth});
@@ -43,13 +46,26 @@ class _RoutePageState extends State<RootPage> {
     });
   }
 
+  final _firestoreService = FirestoreService();
+  FavoriteDataModel createErrorMessage(error) {
+    return FavoriteDataModel(
+        id: "", message: error, name: "error", timestamp: 999999);
+  }
+
   @override
   Widget build(BuildContext context) {
     switch (_authStatus) {
       case AuthStatus.notSignedIn:
         return LoginPage(auth: widget.auth, onSignedIn: _signedIn);
       case AuthStatus.signedIn:
-        return MyHomePage(auth: widget.auth, onSignedOut: _signedOut);
+        return StreamProvider<List<FavoriteDataModel>>(
+            create: (BuildContext context) =>
+                _firestoreService.fetchFirestoreData(),
+            initialData: [],
+            catchError: (context, error) =>
+                [createErrorMessage(error.toString())],
+            child: MyHomePage(auth: widget.auth, onSignedOut: _signedOut));
+      // return MyHomePage(auth: widget.auth, onSignedOut: _signedOut);
     }
   }
 }

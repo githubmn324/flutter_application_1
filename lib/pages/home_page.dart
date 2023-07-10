@@ -48,13 +48,14 @@ class _MyHomePageState extends State<MyHomePage> {
         page = FavoritesPage();
         break;
       case 2:
-        page = StreamProvider<List<FavoriteDataModel>>(
-            create: (BuildContext context) =>
-                _firestoreService.fetchFirestoreData(),
-            initialData: [],
-            catchError: (context, error) =>
-                [createErrorMessage(error.toString())],
-            child: StreamFirestoreDataPage());
+        page = StreamFirestoreDataPage();
+        // page = StreamProvider<List<FavoriteDataModel>>(
+        //     create: (BuildContext context) =>
+        //         _firestoreService.fetchFirestoreData(),
+        //     initialData: [],
+        //     catchError: (context, error) =>
+        //         [createErrorMessage(error.toString())],
+        //     child: StreamFirestoreDataPage());
 
         break;
       case 3:
