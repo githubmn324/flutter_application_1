@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/pages/login_page.dart';
-import 'package:flutter_application_1/pages/home_page.dart';
+import 'package:flutter_application_1/views/login_page.dart';
+import 'package:flutter_application_1/views/home_page.dart';
 import 'auth.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
-import '../providers/stream_provider.dart';
-import 'package:flutter_application_1/models/favorite_word.dart';
+import 'view_models/firestore_data_list_view_model.dart';
+import 'package:flutter_application_1/models/firestore_data_model.dart';
 
 class RootPage extends StatefulWidget {
   RootPage({required this.auth});
@@ -46,10 +46,10 @@ class _RoutePageState extends State<RootPage> {
     });
   }
 
-  final _firestoreService = FirestoreService();
-  FavoriteDataModel createErrorMessage(error) {
-    return FavoriteDataModel(
-        id: "", message: error, name: "error", timestamp: 999999);
+  final _firestoreDataListViewModel = FirestoreDataListViewModel();
+  FirestoreDataModel createErrorMessage(error) {
+    return FirestoreDataModel(
+        id: "", email: "", message: error, name: "error", timestamp: 999999);
   }
 
   @override
@@ -58,9 +58,9 @@ class _RoutePageState extends State<RootPage> {
       case AuthStatus.notSignedIn:
         return LoginPage(auth: widget.auth, onSignedIn: _signedIn);
       case AuthStatus.signedIn:
-        return StreamProvider<List<FavoriteDataModel>>(
+        return StreamProvider<List<FirestoreDataModel>>(
             create: (BuildContext context) =>
-                _firestoreService.fetchFirestoreData(),
+                _firestoreDataListViewModel.getFavoriteWords(),
             initialData: [],
             catchError: (context, error) =>
                 [createErrorMessage(error.toString())],

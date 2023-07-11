@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/app_state.dart';
-import '../providers/stream_provider.dart';
+import '../view_models/app_state.dart';
+import '../view_models/firestore_favorite_list_view_model.dart';
 
-class ProxyTest extends StatelessWidget {
-  const ProxyTest({Key? key}) : super(key: key);
+class FirestoreGetPage extends StatelessWidget {
+  const FirestoreGetPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProxyProvider<MyAppState, FirestoreFavoriteList>(
-        create: (context) => FirestoreFavoriteList(),
+    return ChangeNotifierProxyProvider<MyAppState, FirestoreFavoriteViewModel>(
+        create: (context) => FirestoreFavoriteViewModel(),
         update: (context, myAppState, firestoreFavoriteList) {
           firestoreFavoriteList!.getFirestoreData(myAppState.favorites);
           return firestoreFavoriteList;

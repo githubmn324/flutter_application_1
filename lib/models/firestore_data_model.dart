@@ -1,19 +1,22 @@
-class FavoriteDataModel {
+class FirestoreDataModel {
   final String id;
+  final String email;
   final String message;
   final String name;
   final int timestamp;
 
-  FavoriteDataModel(
+  FirestoreDataModel(
       {required this.id,
+      required this.email,
       required this.message,
       required this.name,
       required this.timestamp});
 
-  // keyが文字列で値がdynamicなMapオブジェクトを FavoriteDataModel に変換
-  FavoriteDataModel.fromJson(String documentId, Map<String, dynamic> parsedJson)
+  // keyが文字列で値がdynamicなMapオブジェクトを FirestoreDataModel に変換
+  FirestoreDataModel.fromJson(
+      String documentId, Map<String, dynamic> parsedJson)
       : id = documentId,
-        // : message = parsedJson['message'], // catchErrorの動作確認
+        email = parsedJson['email'] ?? "",
         message = parsedJson['text'] ?? "",
         name = parsedJson['name'] ?? "",
         timestamp = parsedJson['timestamp'];

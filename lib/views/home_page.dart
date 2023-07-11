@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
 import '../auth.dart';
 import '../main.dart';
-import './favorite_word.dart';
-import './fetch_proxy.dart';
-import 'value_listenable.dart';
-import 'package:provider/provider.dart';
-import 'package:flutter_application_1/models/favorite_word.dart';
-import '../providers/stream_provider.dart';
-import '../providers/app_state.dart';
+import 'firestore_stream_page.dart';
+import 'firestore_get_page.dart';
+import 'package:flutter_application_1/models/firestore_data_model.dart';
 
 class MyHomePage extends StatefulWidget {
   MyHomePage({required this.auth, required this.onSignedOut});
@@ -30,15 +26,13 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   var selectedIndex = 0;
 
-  final _firestoreService = FirestoreService();
-  FavoriteDataModel createErrorMessage(error) {
-    return FavoriteDataModel(
-        id: "", message: error, name: "error", timestamp: 999999);
+  FirestoreDataModel createErrorMessage(error) {
+    return FirestoreDataModel(
+        id: "", email: "", message: error, name: "error", timestamp: 999999);
   }
 
   @override
   Widget build(BuildContext context) {
-    var appState = context.watch<MyAppState>();
     Widget page;
     switch (selectedIndex) {
       case 0:
@@ -48,21 +42,10 @@ class _MyHomePageState extends State<MyHomePage> {
         page = FavoritesPage();
         break;
       case 2:
-        page = StreamFirestoreDataPage();
-        // page = StreamProvider<List<FavoriteDataModel>>(
-        //     create: (BuildContext context) =>
-        //         _firestoreService.fetchFirestoreData(),
-        //     initialData: [],
-        //     catchError: (context, error) =>
-        //         [createErrorMessage(error.toString())],
-        //     child: StreamFirestoreDataPage());
-
+        page = FirestoreStreamPage();
         break;
       case 3:
-        page = ProxyTest();
-        break;
-      case 4:
-        page = ValueListenableTest();
+        page = FirestoreGetPage();
         break;
       default:
         throw UnimplementedError('no widget for $selectedIndex');
@@ -82,13 +65,10 @@ class _MyHomePageState extends State<MyHomePage> {
                       icon: Icon(Icons.favorite), label: Text('Favorites')),
                   NavigationRailDestination(
                       icon: Icon(Icons.filter_drama),
-                      label: Text('StreamFirestore')),
+                      label: Text('Firestore Stream Page')),
                   NavigationRailDestination(
                       icon: Icon(Icons.portable_wifi_off_sharp),
-                      label: Text('ProxyTest')),
-                  NavigationRailDestination(
-                      icon: Icon(Icons.telegram),
-                      label: Text('ValueListenableTest')),
+                      label: Text('Firestore Get Page')),
                 ],
                 trailing: IconButton(
                   onPressed: widget._onSignedOut,

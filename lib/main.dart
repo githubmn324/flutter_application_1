@@ -4,10 +4,10 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'auth.dart';
 import 'root_page.dart';
-import 'providers/stream_provider.dart';
-import 'providers/app_state.dart';
+import 'repositories/firestore_services.dart';
+import 'view_models/app_state.dart';
 import 'package:english_words/english_words.dart';
-import 'models/favorite_word.dart';
+import 'models/firestore_data_model.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,15 +18,13 @@ Future<void> main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  FavoriteDataModel createErrorMessage(error) {
-    return FavoriteDataModel(
-        id: "", message: error, name: "error", timestamp: 999999);
+  FirestoreDataModel createErrorMessage(error) {
+    return FirestoreDataModel(
+        id: "", email: "", message: error, name: "error", timestamp: 999999);
   }
 
   @override
   Widget build(BuildContext context) {
-    final _firestoreService = FirestoreService();
-
     final darkTheme = ThemeData.from(
       colorScheme: ColorScheme.dark(primary: Colors.blueGrey),
     );
@@ -38,24 +36,18 @@ class MyApp extends StatelessWidget {
             create: ((context) => MyAppState()),
           ),
           // Firestoreのストリームデータを管理
-          // StreamProvider<List<FavoriteDataModel>>(
+          // StreamProvider<List<FirestoreDataModel>>(
           //     create: (BuildContext context) =>
           //         _firestoreService.fetchFirestoreData(),
           //     initialData: [],
           //     catchError: (context, error) =>
           //         [createErrorMessage(error.toString())]),
-          // ProxyProvider<MyAppState, <List<FavoriteDataDetailModel>>>(
+          // ProxyProvider<MyAppState, <List<FirestoreFavoriteDataModel>>>(
           //     create: (_) => _firestoreService.getFirestoreData(),
           //     update: (_, myAppState, dataListModel) {
           //       dataListModel!.updateList(myAppState.favorites);
           //       return dataListModel;
           //     })
-          // FutureProvider<List<FavoriteDataModel>>(
-          //   create: (context) => _firestoreService.getFirestoreData(),
-          //   initialData: [initialData],
-          //   catchError: (context, error) =>init()
-          //       [createErrorMessage(error.toString())],
-          // )
         ],
         child: MaterialApp(
           title: 'flutter_application_1',

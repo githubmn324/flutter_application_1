@@ -1,14 +1,12 @@
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 
-// abstract is a way of define interface for classes to implement
 abstract class BaseAuth {
   Future<String> signInWithEmailAndPassword(String email, String password);
   Future<String> createUserWithEmailAndPassword(String email, String password);
   Future<void> signOut();
 }
 
-// create interfate
 class Auth implements BaseAuth {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   @override
